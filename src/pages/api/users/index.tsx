@@ -1,5 +1,21 @@
 import { PrismaClient } from "@prisma/client";
 import { NextApiRequest, NextApiResponse } from "next";
+import jwt, { JwtPayload } from "jsonwebtoken";
+
+interface CustomJwtPayload extends JwtPayload {
+  data: {
+    username: string;
+    email: string;
+    phone_number: number;
+    active: boolean;
+    created_at: string;
+    updated_at: string;
+    role: {
+      id: number;
+      role_name: string;
+    };
+  };
+}
 
 const prisma = new PrismaClient();
 
@@ -49,6 +65,29 @@ const User = async (req: NextApiRequest, res: NextApiResponse) => {
   } else if (req.method == "POST") {
     const { username, email, phone_number, roleId } = req.body;
     try {
+      const bearerToken = req.headers.authorization;
+      let decodedToken
+      if (!bearerToken) {
+        res.status(500).json({
+          message: "Unathorized",
+        });
+      } else {
+        decodedToken = jwt.verify(bearerToken.split(" ")[1], "secret" ) as CustomJwtPayload;
+      }
+
+      
+      if (!decodedToken) {
+        res.status(500).json({
+          message: 'Invalid token.'
+        })
+      }
+
+      if (decodedToken?.data.role.role_name !== "petugas") {
+        res.status(500).json({
+          message: 'Unauthorized: Only "petugas" can create a post.'
+        })
+      }
+
       const createUser = await prisma.users.create({
         data: {
           username,
@@ -58,6 +97,14 @@ const User = async (req: NextApiRequest, res: NextApiResponse) => {
           roleId,
         },
       });
+
+      const dataEmail = {
+        from: 'spongebobteros@gmail.com',
+        to: createUser.email,
+        subject: 'Data Created',
+        text: 'Test masuk emailnya'
+      }
+
       res.status(201).json({
         statusCode: 201,
         message: "Create User Success",
@@ -96,7 +143,7 @@ const User = async (req: NextApiRequest, res: NextApiResponse) => {
     }
   } else if (req.method == "PUT") {
     try {
-      const { username, email, phone_number } = req.body;
+      const { username, email, phone_number, roleId } = req.body;
       const userId = Number(req.query.id);
 
       const editUser = await prisma.users.update({
@@ -107,6 +154,7 @@ const User = async (req: NextApiRequest, res: NextApiResponse) => {
           username,
           email,
           phone_number,
+          roleId,
         },
       });
       res.status(200).json({
