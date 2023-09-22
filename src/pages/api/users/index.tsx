@@ -4,17 +4,33 @@ import { NextApiRequest, NextApiResponse } from "next";
 const prisma = new PrismaClient();
 
 const User = async (req: NextApiRequest, res: NextApiResponse) => {
+  const generateRandomString = () => {
+    const characters =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let result = "";
+    const length = 12; // Panjang karakter yang diinginkan
+
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      result += characters.charAt(randomIndex);
+    }
+
+    return result;
+  };
+
   if (req.method == "GET") {
     try {
       const getAllUser = await prisma.users.findMany({
         select: {
-            username: true,
-            email: true,
-            phone_number: true,
-            created_at: true,
-            updated_at: true,
-            role: true
-        }
+          id: true,
+          username: true,
+          email: true,
+          phone_number: true,
+          active: true,
+          created_at: true,
+          updated_at: true,
+          role: true,
+        },
       });
       res.status(200).json({
         statusCode: 200,
@@ -37,14 +53,14 @@ const User = async (req: NextApiRequest, res: NextApiResponse) => {
         data: {
           username,
           email,
+          password: generateRandomString(),
           phone_number,
-          roleId
+          roleId,
         },
       });
       res.status(201).json({
         statusCode: 201,
         message: "Create User Success",
-        createUser,
       });
     } catch (error) {
       res.status(500).json({
