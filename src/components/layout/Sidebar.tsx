@@ -1,8 +1,20 @@
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/router";
+import { useState, useEffect } from "react";
 
 const Sidebar = () => {
-  const [activeMenu, setActiveMenu] = useState<string>("Dashboard");
+  const [activeMenu, setActiveMenu] = useState<string>("");
+
+  const router = useRouter()
+  
+  useEffect(() => {
+    const pathName = router.pathname
+    if (pathName == '/') {
+      setActiveMenu('Dashboard')
+    } else {
+      setActiveMenu('Users Management')
+    }
+  }, [router])
 
   const menuList = [
     {

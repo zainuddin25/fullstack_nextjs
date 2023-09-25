@@ -120,7 +120,7 @@ const User = async (req: NextApiRequest, res: NextApiResponse) => {
     }
   } else if (req.method == "DELETE") {
     try {
-      const userId = Number(req.query.id);
+      const userId = req.query.id as string
 
       const deleteUser = await prisma.users.delete({
         where: {
@@ -144,7 +144,7 @@ const User = async (req: NextApiRequest, res: NextApiResponse) => {
   } else if (req.method == "PUT") {
     try {
       const { username, email, phone_number, roleId } = req.body;
-      const userId = Number(req.query.id);
+      const userId = req.query.id as string
 
       const editUser = await prisma.users.update({
         where: {

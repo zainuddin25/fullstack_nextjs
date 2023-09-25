@@ -24,7 +24,9 @@ const Login = () => {
         localStorage.setItem("token", token)
         router.push('/')
       }
-    } catch (error) {}
+    } catch (error) {
+      window.alert('Login Failed')
+    }
   };
 
   return (
