@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 const Activation = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method == "POST") {
     try {
-      const userId = Number(req.query.id);
+      const userId = req.query.id as string;
       const { password } = req.body;
 
       const findUser = await prisma.users.findUnique({
